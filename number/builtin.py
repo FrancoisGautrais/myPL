@@ -1,26 +1,32 @@
 #!/usr/bin/python3
 
-def _print(x):
-    print(x)
+import time
+
+class Array(list):
+    def __init__(self):
+        list.__init__(self)
+
+    def length(self): return self.__len__()
+
+    def at(self, n): return self[n]
+
+    def contains(self, n):
+        return n in self
+
+    def set(self, n, val):
+        self[n] = val
+        return  val
 
 BUILTIN={
-    "print": _print,
+    "print": print,
     "int": int,
     "float": float,
     "bool": bool,
     "string": str,
-    "array": list,
-    "list": list,
+    "array": Array,
+    "list": Array,
     "len": len,
-    "object": dict
+    "object": dict,
+    "timestamp": time.time
 }
-
-def hasBuiltin(name):
-    return name in BUILTIN
-
-def getBuiltIn(name):
-    return BUILTIN[name]
-
-def execBuiltin(name, args):
-    return BUILTIN[name](*tuple(args))
 

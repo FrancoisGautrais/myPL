@@ -10,7 +10,7 @@ ret=context.execSourceFile("test.code")
 #print(ret[0], "->", ret[1])
 #context.execSourceFile("test2.code")
 while True:
-    context.stack.print()
+    #context.stack.print()
     sys.stdout.write(">>> ")
     sys.stdout.flush()
     line=sys.stdin.readline()

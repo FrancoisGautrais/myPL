@@ -114,7 +114,8 @@ class Lexer:
 		"while" : TOK_KEYWORD,
 		"for" : TOK_KEYWORD,
 		"or" : TOK_OR,
-		"and" : TOK_AND
+		"and" : TOK_AND,
+		"return" : TOK_KEYWORD
 	}
 	NUMBER="0123456789"
 	IDENT="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"

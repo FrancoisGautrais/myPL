@@ -7,9 +7,9 @@ from .operation import *
 #
 # bloc -> '{' instlist '}' | inst
 # instlist -> inst [ ';' inst ]*
-# inst -> expr ';'
+# inst -> return expr | expr ';'
 # expr -> def | for | while | if | expraff
-# def -> 'def' [IDENT] '(' [IDENT [, IDENT]*] ')' '=' expr | expr
+# def -> 'def' [IDENT] '(' [IDENT [, IDENT]*] ')' ['='] expr | expr
 # for -> 'for' '(' [expr] ; [expr]; [expr] ')' bloc
 # while -> 'wille' '(' expr ')' bloc
 # if -> 'if' '(' expr ')' bloc [ 'elif' '(' expr ')' bloc ]* ['else' bloc]
@@ -66,6 +66,7 @@ class Parser:
         return bloc
 
     def _instList(self):
+        if self.tok==Lexer.TOK_AF: return Bloc(Nop())
         bloc = Bloc(self._inst())
         while self.tok != Lexer.TOK_END and self.tok!=Lexer.TOK_AF:
             if self.tok==Lexer.TOK_AF:
@@ -79,7 +80,15 @@ class Parser:
         return bloc
 
     def _inst(self):
+        if self.tok==Lexer.TOK_KEYWORD:
+            if self.data == "return": return self._return()
         return self._expr()
+
+    def _return(self):
+        if self.tok!=Lexer.TOK_KEYWORD or self.data!="return":
+            raise Exception("Return must begin by 'return")
+        self._next()
+        return Return(self._expr())
 
     def _expr(self):
         if self.tok==Lexer.TOK_KEYWORD:
@@ -102,7 +111,7 @@ class Parser:
 
             if self.tok == Lexer.TOK_PF:
                 self._next()
-                return Definition(first, self._expr(), args)
+                return Definition(first, self._block(), args)
 
             if self.tok != Lexer.TOK_IDENT: raise Exception("A Expected ident for var args : " + Lexer.tokstr(self.tok))
             args.append(self.data)
@@ -118,9 +127,9 @@ class Parser:
                 args.append(self.data)
                 self._next()
             self._next()
-            if self.tok != Lexer.TOK_AFF: raise Exception("Expected '=' for end def : " + Lexer.tokstr(self.tok))
-            self._next()
-            return Definition(first, self._expr(), args)
+            if self.tok == Lexer.TOK_AFF:
+                self._next()
+            return Definition(first, self._block(), args)
 
     def _for(self):
         if self.tok!=Lexer.TOK_KEYWORD or self.data!="for":
@@ -296,10 +305,11 @@ class Parser:
         first = self._prim()
         op = self.tok
 
-        if not (op in [Lexer.TOK_MUL, Lexer.TOK_DIV]):    return first
+        if not (op in [Lexer.TOK_MUL, Lexer.TOK_DIV, Lexer.TOK_MODULO]):    return first
 
         self._next()
         second = self._exprMul()
+        if op == Lexer.TOK_MODULO: return Modulo(first, second)
         if op == Lexer.TOK_MUL: return Multiplication(first, second)
         return Multiplication(first, second)
 

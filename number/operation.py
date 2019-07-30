@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from .builtin import hasBuiltin, execBuiltin, BUILTIN
+from .builtin import BUILTIN
 import sys
 
 class FunctionEntry:
@@ -260,6 +260,12 @@ class Bloc(Operation):
 		if self.enclose: env.pushEnv()
 		for inst in self.insts:
 			ret=inst.eval(env)
+			if type(ret)==Return:
+				ret=ret.getValue()
+				if self.enclose:
+					env.popEnv()
+				return Return(ret)
+
 		if self.enclose: env.popEnv()
 		return ret;
 
@@ -272,7 +278,12 @@ class Bloc(Operation):
 			x+=str(self.insts[i])
 		return x+"}"
 
+class Return(UnaryOperation):
+	def eval(self, env):
+		return Return(self.first.eval(env))
 
+	def getValue(self):
+		return self.first
 
 class Number(UnaryOperation):
 	def eval(self, env=Stack()):
@@ -489,6 +500,8 @@ class Appel(Operation):
 			#stack.print()
 			out=fct.fct.eval(stack)
 			stack.popEnv()
+			if type(out)==Return:
+				out=out.getValue()
 			return out
 		else:
 			for i in range(len(self.args)): args.append(self.args[i].eval(stack))
