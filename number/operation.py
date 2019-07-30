@@ -468,21 +468,23 @@ class Appel(Operation):
 	def eval(self, stack):
 		name=self.name.getFinalName()
 
-		fct=stack.get(name)
+		args = []
+		fct=None
 		env=Environement()
-		if self.name.countRef>0:
-			env.set(self, )
-
-		args=[]
+		if self.name.countRef()>0:
+			fct=self.name.getFinalObject(stack)
+		else:
+			fct=stack.get(name)
 
 		if type(fct)==FunctionEntry and callable(fct.fct):
 			for i in range(len(self.args)): args.append(self.args[i].eval(stack))
 			return fct.fct(*tuple(args))
 		elif type(fct)==FunctionEntry:
-			if len(self.args)<len(fct.argsName):
+			if len(self.args)+len(args)<len(fct.argsName):
 				raise Exception("Error: "+str(self.name)+" takes "+str(len(fct.argsName))+" args, "+str(len(self.args))+" given")
-			for i in range(len(fct.argsName)):
+			for i in range(len(self.args)): # ajout des parametres
 				env.set(fct.argsName[i], self.args[i].eval(stack))
+
 			stack.pushEnv(env)
 			#stack.print()
 			out=fct.fct.eval(stack)

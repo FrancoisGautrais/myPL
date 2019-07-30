@@ -11,6 +11,7 @@ BUILTIN={
     "string": str,
     "array": list,
     "list": list,
+    "len": len,
     "object": dict
 }
 

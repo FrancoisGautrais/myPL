@@ -1,2 +1,2 @@
 x=object()
-x.keys()
+print(x.keys())
