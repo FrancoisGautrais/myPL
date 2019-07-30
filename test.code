@@ -1,2 +1,11 @@
-x=object()
-print(x.keys())
+bigger=1
+
+def isFirst(n) {
+    firsts=list()
+    all=list()
+    for(i=2; i<n; i++) all.append(i)
+    while(len(all)>0){
+        allBis=list()
+        x=allBis.__getitem__(0)
+    }
+}
