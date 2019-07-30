@@ -11,13 +11,26 @@ class Context:
 		self.stack.set("__context__", self)
 
 	def exec(self, string):
-		parser=Parser(StringIOWrapper(string))
-		res=parser.parse()
+		res=self.parse(string)
 		return (res, res.eval(self.stack))
 
+
+	def parse(self, string):
+		parser=Parser(StringIOWrapper(string))
+		res=parser.parse(self)
+		return res
+
+
 	def execSourceFile(self, path):
+		fd = open(path, "r")
+		txt = fd.read()
+		ret = self.exec(txt)
+		fd.close()
+		return ret
+
+	def parseSourceFile(self, path):
 		fd=open(path, "r")
 		txt=fd.read()
-		ret=self.exec(txt)
+		ret=self.parse(txt)
 		fd.close()
 		return ret

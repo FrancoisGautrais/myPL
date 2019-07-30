@@ -8,7 +8,7 @@ from .builtin import *
 #
 # bloc -> '{' instlist '}' | inst
 # instlist -> inst [ ';' inst ]*
-# inst -> return expr | expr ';'
+# inst -> 'return' expr | 'include' expr | expr ';'
 # expr -> def | for | while | if | expraff
 # def -> 'def' [IDENT] '(' [IDENT [, IDENT]*] ')' ['='] expr | expr
 # for -> 'for' '(' [expr] ; [expr]; [expr] ')' bloc
@@ -34,6 +34,7 @@ class Parser:
         self.lex = Lexer(fd)
         self.tok = Lexer.TOK_UNKNOWN
         self.data = None
+        self.context = None
 
     def _next(self):
         self.tok = self.lex.next()
@@ -41,7 +42,8 @@ class Parser:
         #print("Token", Lexer.tokstr(self.tok), " '" + str(self.data) + "'")
         return self.tok
 
-    def parse(self):
+    def parse(self, context):
+        self.context=context
         self._next()
         return self._main()
 
@@ -84,7 +86,12 @@ class Parser:
     def _inst(self):
         if self.tok==Lexer.TOK_KEYWORD:
             if self.data == "return": return self._return()
+            if self.data == "include": return self._include()
         return self._expr()
+
+    def _include(self):
+        self._next()
+        return self.context.parseSourceFile(self._expr().eval(self.context.stack))
 
     def _return(self):
         if self.tok!=Lexer.TOK_KEYWORD or self.data!="return":
