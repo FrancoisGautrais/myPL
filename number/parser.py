@@ -22,8 +22,9 @@ from .operation import *
 # exprcmp -> expradd ('<'|'<='|'>'|'>='|'=='|'!=') exprcmp | expradd
 # expradd -> exprmul '-' expradd |  exprmul '+' expradd | exprmul
 # exprmul -> prim '*' exprmul |  prim '/' exprmul | prim
-# prim -> ident [call]  int | float | bool | '(' expr ')'
+# prim -> object [call]  int | float | bool | '(' expr ')'
 # call ->  '(' [expr [ ',' expr ]*] ')'
+# object -> ident [ '.' ident ]*
 # ident -> IDENT
 
 class Parser:
@@ -322,10 +323,10 @@ class Parser:
             return ret
         # ident
         if self.tok in [Lexer.TOK_IDENT]:
-            name = self._ident()
+            name = self._object()
             if self.tok == Lexer.TOK_PO:
                 return self._call(name)
-            return Variable(name)
+            return name
         raise Exception("Attendu: int, float ou '(' => " + Lexer.tokstr(self.tok))
 
     def _call(self, name):
@@ -333,7 +334,7 @@ class Parser:
         self._next()
         if self.tok == Lexer.TOK_PF:
             self._next()
-            return Appel(Variable(name), args)
+            return Appel(name, args)
 
         args.append(self._expr())
 
@@ -344,7 +345,17 @@ class Parser:
             args.append(self._expr())
         self._next()
 
-        return Appel(Variable(name), args)
+        return Appel(name, args)
+
+    def _object(self):
+        if self.tok != Lexer.TOK_IDENT: raise Exception("IDENT expected")
+        v=Variable(self._ident())
+
+        while self.tok==Lexer.TOK_REF:
+            self._next()
+            v.addReferenced(self._ident())
+
+        return v
 
     def _ident(self):
         data = self.data

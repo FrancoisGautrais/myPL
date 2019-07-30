@@ -11,7 +11,7 @@ BUILTIN={
     "string": str,
     "array": list,
     "list": list,
-    "ok": lambda : print("ok")
+    "object": dict
 }
 
 def hasBuiltin(name):

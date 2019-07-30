@@ -44,10 +44,16 @@ class Environement:
 				s+="\t"+key+"='"+str(self.var[key])+"'\n"
 		return s
 
+class Test:
+	def __init__(self):
+		self.a=1
+		self.b=1
+		self.c=1
+
 class Stack:
 	def __init__(self):
 		self.envs=[Environement()]
-
+		self.set("test", Test())
 		for x in BUILTIN:
 			self.set(x, FunctionEntry(BUILTIN[x], []))
 	
@@ -329,7 +335,9 @@ class Variable(Operation):
 		if first: self.stack.append(first)
 
 	def eval(self, env=Stack()):
-		return self.getFinalObjet(env)
+		return self.getFinalObject(env)
+
+	def countRef(self): return len(self.stack)-1
 
 	def getBaseObject(self, env):
 		if len(self.stack) < 2: return None
@@ -340,18 +348,23 @@ class Variable(Operation):
 			ret = getattr(ret, self.stack[i])
 		return ret
 
-	def getFinalObjet(self, env):
+	def getFinalObject(self, env):
 		if len(self.stack)==0: return None
 		name=self.stack[0].eval(env)
 		ret=env.get(name)
 		if ret==None: raise Exception("Variable '"+self.stack[0]+"' inconnu")
 		for i in range(1, len(self.stack)):
-			ret=getattr(ret, self.stack[i])
+			ret=getattr(ret, self.stack[i].first)
 		return ret
 
 	def getFirstName(self):
 		return self.stack[0]
 
+	def getFinalName(self):
+		return self.stack[-1]
+
+	def addReferenced(self, name):
+		self.stack.append(name)
 
 	def __str__(self):
 		s=""
@@ -436,7 +449,11 @@ class BitOrOperation(BinaryOperation):
 class Affectation(BinaryOperation):
 	def eval(self, env=Stack()):
 		x=self.second.eval(env)
-		env.set(str(self.first), x)
+
+		if self.first.countRef()>0:
+			setattr(self.first.getBaseObject(env), self.first.getFinalName().first, x)
+		else:
+			env.set(str(self.first.getFirstName()), x)
 		return x
 
 	def __str__(self):
@@ -449,16 +466,19 @@ class Appel(Operation):
 		self.args=args
 		
 	def eval(self, stack):
-		name=self.name.getFirstName()
+		name=self.name.getFinalName()
 
 		fct=stack.get(name)
 		env=Environement()
+		if self.name.countRef>0:
+			env.set(self, )
 
-		if callable(fct.fct):
-			args=[]
+		args=[]
+
+		if type(fct)==FunctionEntry and callable(fct.fct):
 			for i in range(len(self.args)): args.append(self.args[i].eval(stack))
 			return fct.fct(*tuple(args))
-		else:
+		elif type(fct)==FunctionEntry:
 			if len(self.args)<len(fct.argsName):
 				raise Exception("Error: "+str(self.name)+" takes "+str(len(fct.argsName))+" args, "+str(len(self.args))+" given")
 			for i in range(len(fct.argsName)):
@@ -468,6 +488,10 @@ class Appel(Operation):
 			out=fct.fct.eval(stack)
 			stack.popEnv()
 			return out
+		else:
+			for i in range(len(self.args)): args.append(self.args[i].eval(stack))
+			return fct(*tuple(args))
+
 	
 	def __str__(self):
 		return str(self.name)
