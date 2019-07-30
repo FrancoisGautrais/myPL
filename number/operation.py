@@ -297,6 +297,14 @@ class Number(UnaryOperation):
 	
 	def isLeaf(self): return True
 
+class ArrayWrapper(Number):
+	def eval(self, env=Stack()):
+		for i in range(len(self.first)):
+			self.first[i]=self.first[i].eval(env)
+		return self.first
+
+
+
 class String(UnaryOperation):
 	def eval(self, env=Stack()):
 		return self.first
@@ -354,7 +362,7 @@ class Variable(Operation):
 		if len(self.stack) < 2: return None
 		name = self.stack[0][1].eval(env)
 		ret=env.get(name)
-		if ret==None: raise Exception("Variable '"+self.stack[0][1]+"' inconnu")
+		if ret==None: raise Exception("Variable '"+str(self.stack[0][1])+"' inconnu")
 		for i in range(1, len(self.stack) - 1):
 			if self.stack[i][0]: ret=ret.__getitem__(self.stack[i][1].eval(env))
 			else: ret=getattr(ret, self.stack[i][1].first)
@@ -364,7 +372,7 @@ class Variable(Operation):
 		if len(self.stack)==0: return None
 		name=self.stack[0][1].eval(env)
 		ret=env.get(name)
-		if ret==None: raise Exception("Variable '"+self.stack[0][1]+"' inconnu")
+		if ret==None: raise Exception("Variable '"+str(self.stack[0][1])+"' inconnu")
 		for i in range(1, len(self.stack)):
 			if self.stack[i][0]: ret=ret.__getitem__(self.stack[i][1].eval(env))
 			else: ret=getattr(ret, self.stack[i][1].first)
@@ -388,8 +396,11 @@ class Variable(Operation):
 	def __str__(self):
 		s=""
 		for i in range(len(self.stack)):
-			if i>0: s+="."
-			s+=self.stack[i].first
+			if self.stack[i][0]:
+				if i>0: s+="."
+				s+=self.stack[i][1].first
+			else:
+				s+="["+self.stack[i][1].first+"]"
 		return s
 		
 	def isLeaf(self): return False

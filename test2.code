@@ -1,17 +1,19 @@
+
+
+
 def eratostene(n) {
-    firsts=list()
-    firsts.append(1)
-    all=list()
+    firsts=[1]
+    all=[]
     for(i=2; i<n; i++) all.append(i)
 
     while(all.length()>0){
-        x=all.at(0)
+        x=all[0]
         all.remove(x)
         firsts.append(x)
 
         for(i=all.length()-1; i>=0; i--){
 
-            if(all.at(i)%x==0){
+            if(all[i]%x==0){
                 all.remove(all[i])
             }
         }
@@ -24,13 +26,10 @@ def decompose(n){
     premiers=eratostene(int(n/2)+1)
     for(i=premiers.length()-1; i>=0; i--){
         for(j=premiers.length()-1; j>=0; j--){
-            a=premiers.at(i)
-            b=premiers.at(j)
+            a=premiers[i]
+            b=premiers[j]
             if(a*b<=n){
-                tmp=list()
-                tmp.append(a)
-                tmp.append(b)
-                out.append(tmp)
+                out.append([a,b])
                 n-=a*b
                 if(n==0) return out
 
@@ -49,14 +48,15 @@ def assemble(arr)
     for(i=0; i<arr.length(); i++)
     {
         if(i>0) out+="+"
-        x=arr.at(i)
-        out+=string(x.at(0))+"*"+string(x.at(1))
-        acc+=x.at(0)*x.at(1)
+        x=arr[i]
+        out+=string(x[0])+"*"+string(x[1])
+        acc+=x[0]*x[1]
     }
     return out+"="+string(acc)
 }
 
+
 t=timestamp()
-x=decompose(1310)
+x=decompose(131)
 assemble(x)
 print("in ", timestamp()-t, " s")

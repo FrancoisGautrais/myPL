@@ -3,6 +3,7 @@
 from .lexer import Lexer
 
 from .operation import *
+from .builtin import *
 
 #
 # bloc -> '{' instlist '}' | inst
@@ -381,11 +382,11 @@ class Parser:
     def _array(self):
         if self.tok != Lexer.TOK_CO: raise Exception("'[' expected")
         self._next()
-        x=[]
+        x=Array()
 
         if self.tok == Lexer.TOK_CF:
             self._next()
-            return Number(x)
+            return ArrayWrapper(x)
 
         x.append(self._expr())
 
@@ -395,7 +396,7 @@ class Parser:
 
         if self.tok != Lexer.TOK_CF: raise Exception("Array must end with ']'")
         self._next()
-        return Number(x)
+        return ArrayWrapper(x)
 
     def _ident(self):
         data = self.data
