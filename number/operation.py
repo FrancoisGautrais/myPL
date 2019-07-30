@@ -343,7 +343,7 @@ class Variable(UnaryOperation):
 class Variable(Operation):
 	def __init__(self, first=None):
 		self.stack=[]
-		if first: self.stack.append(first)
+		if first: self.stack.append((False, first))
 
 	def eval(self, env=Stack()):
 		return self.getFinalObject(env)
@@ -352,30 +352,38 @@ class Variable(Operation):
 
 	def getBaseObject(self, env):
 		if len(self.stack) < 2: return None
-		name = self.stack[0].eval(env)
+		name = self.stack[0][1].eval(env)
 		ret=env.get(name)
-		if ret==None: raise Exception("Variable '"+self.stack[0]+"' inconnu")
+		if ret==None: raise Exception("Variable '"+self.stack[0][1]+"' inconnu")
 		for i in range(1, len(self.stack) - 1):
-			ret = getattr(ret, self.stack[i])
+			if self.stack[i][0]: ret=ret.__getitem__(self.stack[i][1].eval(env))
+			else: ret=getattr(ret, self.stack[i][1].first)
 		return ret
 
 	def getFinalObject(self, env):
 		if len(self.stack)==0: return None
-		name=self.stack[0].eval(env)
+		name=self.stack[0][1].eval(env)
 		ret=env.get(name)
-		if ret==None: raise Exception("Variable '"+self.stack[0]+"' inconnu")
+		if ret==None: raise Exception("Variable '"+self.stack[0][1]+"' inconnu")
 		for i in range(1, len(self.stack)):
-			ret=getattr(ret, self.stack[i].first)
+			if self.stack[i][0]: ret=ret.__getitem__(self.stack[i][1].eval(env))
+			else: ret=getattr(ret, self.stack[i][1].first)
 		return ret
 
 	def getFirstName(self):
-		return self.stack[0]
+		return self.stack[0][1]
 
 	def getFinalName(self):
-		return self.stack[-1]
+		return self.stack[-1][1]
 
 	def addReferenced(self, name):
-		self.stack.append(name)
+		self.stack.append( (False, name) )
+
+	def addHookReferenced(self, name):
+		self.stack.append( (True, name) )
+
+	def isHook(self):
+		return self.stack[-1][0]
 
 	def __str__(self):
 		s=""
@@ -461,8 +469,10 @@ class Affectation(BinaryOperation):
 	def eval(self, env=Stack()):
 		x=self.second.eval(env)
 
+
 		if self.first.countRef()>0:
-			setattr(self.first.getBaseObject(env), self.first.getFinalName().first, x)
+			if self.first.isHook(): self.first.getBaseObject(env).__setitem__(self.first.getFinalName().first, x)
+			else: setattr(self.first.getBaseObject(env), self.first.getFinalName().first, x)
 		else:
 			env.set(str(self.first.getFirstName()), x)
 		return x

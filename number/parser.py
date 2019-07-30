@@ -24,7 +24,8 @@ from .operation import *
 # exprmul -> prim '*' exprmul |  prim '/' exprmul | prim
 # prim -> object [call]  int | float | bool | '(' expr ')'
 # call ->  '(' [expr [ ',' expr ]*] ')'
-# object -> ident [ '.' ident ]*
+# object -> ident [  '.' ident  |  '[' expr ']' ]*
+# array -> '[' [expr [ ',' expr]* ] ']'
 # ident -> IDENT
 
 class Parser:
@@ -313,7 +314,8 @@ class Parser:
         if op == Lexer.TOK_MUL: return Multiplication(first, second)
         return Multiplication(first, second)
 
-    PRIM_PREMIER = [Lexer.TOK_PO, Lexer.TOK_INT, Lexer.TOK_FLOAT, Lexer.TOK_IDENT, Lexer.TOK_BOOL, Lexer.TOK_STRING]
+    PRIM_PREMIER = [Lexer.TOK_PO, Lexer.TOK_INT, Lexer.TOK_FLOAT, Lexer.TOK_IDENT, Lexer.TOK_BOOL, Lexer.TOK_STRING,
+                    Lexer.TOK_CO]
 
     def _prim(self):
         if not (self.tok in Parser.PRIM_PREMIER): raise Exception("_exprMul: Attendu '(', int ou float : "+Lexer.tokstr(self.tok))
@@ -331,6 +333,8 @@ class Parser:
             ret = Number(self.data)
             self._next()
             return ret
+        if self.tok == Lexer.TOK_CO:
+            return self._array()
         # ident
         if self.tok in [Lexer.TOK_IDENT]:
             name = self._object()
@@ -361,11 +365,37 @@ class Parser:
         if self.tok != Lexer.TOK_IDENT: raise Exception("IDENT expected")
         v=Variable(self._ident())
 
-        while self.tok==Lexer.TOK_REF:
-            self._next()
-            v.addReferenced(self._ident())
+        while self.tok==Lexer.TOK_REF or self.tok==Lexer.TOK_CO:
+            if self.tok==Lexer.TOK_REF:
+                self._next()
+                v.addReferenced(self._ident())
+            else:
+                self._next()
+                ident=self._expr()
+                if self.tok!=Lexer.TOK_CF: raise Exception("']' expected after ident reference")
+                self._next()
+                v.addHookReferenced(ident)
 
         return v
+
+    def _array(self):
+        if self.tok != Lexer.TOK_CO: raise Exception("'[' expected")
+        self._next()
+        x=[]
+
+        if self.tok == Lexer.TOK_CF:
+            self._next()
+            return Number(x)
+
+        x.append(self._expr())
+
+        while self.tok == Lexer.TOK_VIRGULE:
+            self._next()
+            x.append(self._expr())
+
+        if self.tok != Lexer.TOK_CF: raise Exception("Array must end with ']'")
+        self._next()
+        return Number(x)
 
     def _ident(self):
         data = self.data

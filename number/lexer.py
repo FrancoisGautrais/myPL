@@ -53,13 +53,15 @@ class Lexer:
 	TOK_OREQUALS=34
 	TOK_ANDEQUALS=35
 	TOK_REF=36
+	TOK_CO=37
+	TOK_CF=38
 
 	TOKEN_LIST=["END", "ADD", "MUL", "DIV", "SUB", "INT", "FLOAT",
 							"P OOUVRANTE", "P FERMANTE", "IDENT", "STRING", "KEYWORD", 
 							"CMP", "NOT", "BOOL", "OR", "AND", "AFF", "VIRGULE", "PVIRGULE",
 				"AO", "AF", "PLUSPLUS", "PLUSEQUALS", "MINUSMINUS", "MINUSEQUALS", "DIVEQUALS",
 				"MULTEQUALS", "MODULO", "MODULOEQUALS", "BOR", "BOREQUALS", "BAND", "BANDEQUALS",
-				"OREQUALS", "ANDEQUALS", "REF"]
+				"OREQUALS", "ANDEQUALS", "REF", "COOUVRANTE", "CFERMANTE"]
 	SEPARATOR=" \t\n\r"
 
 
@@ -104,7 +106,9 @@ class Lexer:
 		">" : TOK_CMP,
 		">=" : TOK_CMP,
 		"==" : TOK_CMP,
-		"." : TOK_REF
+		"." : TOK_REF,
+		"[" : TOK_CO,
+		"]" : TOK_CF
 	}
 	KEYWORDS={
 		"if" : TOK_KEYWORD, 
@@ -198,18 +202,9 @@ class Lexer:
 			self._nc()
 			return x
 
-		#entre ici
 		ret=self.symbols.readNext(self.char, self)
 		if ret:
 			return self._setToken(Lexer.OPERATION[ret], ret)
-
-		"""
-		if self.char in Lexer.OPERATION:
-			x=self._setToken(Lexer.OPERATION[self.char], self.char)
-			self._nc()
-			return x
-		"""
-		#et la
 
 		if self.char in Lexer.NUMBER or self.char=='-':
 			return self._number()
