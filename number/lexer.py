@@ -14,9 +14,6 @@ class StringIOWrapper:
 		self.index+=1
 		return self.char
 
-def isCmp(x):
-	return x in [TOK_]
-
 class Lexer:
 	TOK_UNKNOWN=-1
 	TOK_END=0
@@ -55,13 +52,14 @@ class Lexer:
 	TOK_BANDEQUALS=33
 	TOK_OREQUALS=34
 	TOK_ANDEQUALS=35
+	TOK_REF=36
 
 	TOKEN_LIST=["END", "ADD", "MUL", "DIV", "SUB", "INT", "FLOAT",
 							"P OOUVRANTE", "P FERMANTE", "IDENT", "STRING", "KEYWORD", 
 							"CMP", "NOT", "BOOL", "OR", "AND", "AFF", "VIRGULE", "PVIRGULE",
 				"AO", "AF", "PLUSPLUS", "PLUSEQUALS", "MINUSMINUS", "MINUSEQUALS", "DIVEQUALS",
 				"MULTEQUALS", "MODULO", "MODULOEQUALS", "BOR", "BOREQUALS", "BAND", "BANDEQUALS",
-				"OREQUALS", "ANDEQUALS", "EQUALS"]
+				"OREQUALS", "ANDEQUALS", "REF"]
 	SEPARATOR=" \t\n\r"
 
 
@@ -105,7 +103,8 @@ class Lexer:
 		"<=" : TOK_CMP,
 		">" : TOK_CMP,
 		">=" : TOK_CMP,
-		"==" : TOK_CMP
+		"==" : TOK_CMP,
+		"." : TOK_REF
 	}
 	KEYWORDS={
 		"if" : TOK_KEYWORD, 
@@ -189,11 +188,11 @@ class Lexer:
 			raise Exception("Erreur _string: chaine non terminée")
 		self._nc()
 		return self._setToken(Lexer.TOK_STRING, string, string)
-	
+
 	def next(self):
 		self.current=""
 		self._trim()
-		if self.char=="": 
+		if self.char=="":
 			x=self._setToken(Lexer.TOK_END, None, None)
 			self._nc()
 			return x
@@ -213,12 +212,10 @@ class Lexer:
 
 		if self.char in Lexer.NUMBER or self.char=='-':
 			return self._number()
-		
+
 		if self.char=="\"":
 			return self._string()
-			
-				
-		
+
 		if self.char in Lexer.IDENT:
 			x=self._ident()
 			if self.current.lower()=="true": return self._setToken(Lexer.TOK_BOOL, self.current, True)
@@ -229,6 +226,8 @@ class Lexer:
 	
 	@staticmethod
 	def tokstr(tok):
+		if tok==None:
+			return "UNKNOWN"
 		if tok>=0 and tok<len(Lexer.TOKEN_LIST):
 			return Lexer.TOKEN_LIST[tok]
 		return "UNKNOWN"

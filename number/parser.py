@@ -22,7 +22,8 @@ from .operation import *
 # exprcmp -> expradd ('<'|'<='|'>'|'>='|'=='|'!=') exprcmp | expradd
 # expradd -> exprmul '-' expradd |  exprmul '+' expradd | exprmul
 # exprmul -> prim '*' exprmul |  prim '/' exprmul | prim
-# prim -> ident | int | float | bool | '(' expr ')'
+# prim -> ident [call]  int | float | bool | '(' expr ')'
+# call ->  '(' [expr [ ',' expr ]*] ')'
 # ident -> IDENT
 
 class Parser:
@@ -34,7 +35,7 @@ class Parser:
     def _next(self):
         self.tok = self.lex.next()
         self.data = self.lex.data
-        print("Token", Lexer.tokstr(self.tok), " '" + str(self.data) + "'")
+        #print("Token", Lexer.tokstr(self.tok), " '" + str(self.data) + "'")
         return self.tok
 
     def parse(self):
@@ -332,7 +333,7 @@ class Parser:
         self._next()
         if self.tok == Lexer.TOK_PF:
             self._next()
-            return Appel(name, args)
+            return Appel(Variable(name), args)
 
         args.append(self._expr())
 
@@ -343,7 +344,7 @@ class Parser:
             args.append(self._expr())
         self._next()
 
-        return Appel(name, args)
+        return Appel(Variable(name), args)
 
     def _ident(self):
         data = self.data

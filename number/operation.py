@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from .builtin import hasBuiltin, execBuiltin
+from .builtin import hasBuiltin, execBuiltin, BUILTIN
 import sys
 
 class FunctionEntry:
@@ -47,6 +47,9 @@ class Environement:
 class Stack:
 	def __init__(self):
 		self.envs=[Environement()]
+
+		for x in BUILTIN:
+			self.set(x, FunctionEntry(BUILTIN[x], []))
 	
 	def pushEnv(self, env=Environement()):
 		self.envs.append(env)
@@ -60,9 +63,11 @@ class Stack:
 		return False
 	
 	def get(self, key):
+		key=str(key)
 		for env in reversed(self.envs):
 			if env.has(key): return env.get(key)
-		raise Exception("Var '",key,"' not defined")
+
+		raise Exception("Var '"+key+"' not defined")
 	
 	def set(self, key, val):
 		for env in reversed(self.envs):
@@ -306,7 +311,7 @@ class Identifier(UnaryOperation):
 		
 	def isLeaf(self): return True
 	
-
+"""
 class Variable(UnaryOperation):
 	def eval(self, env=Stack()):
 		var=env.get(self.first.eval(env))
@@ -315,6 +320,45 @@ class Variable(UnaryOperation):
 		
 	def __str__(self):
 		return str(self.first)
+		
+	def isLeaf(self): return False"""
+
+class Variable(Operation):
+	def __init__(self, first=None):
+		self.stack=[]
+		if first: self.stack.append(first)
+
+	def eval(self, env=Stack()):
+		return self.getFinalObjet(env)
+
+	def getBaseObject(self, env):
+		if len(self.stack) < 2: return None
+		name = self.stack[0].eval(env)
+		ret=env.get(name)
+		if ret==None: raise Exception("Variable '"+self.stack[0]+"' inconnu")
+		for i in range(1, len(self.stack) - 1):
+			ret = getattr(ret, self.stack[i])
+		return ret
+
+	def getFinalObjet(self, env):
+		if len(self.stack)==0: return None
+		name=self.stack[0].eval(env)
+		ret=env.get(name)
+		if ret==None: raise Exception("Variable '"+self.stack[0]+"' inconnu")
+		for i in range(1, len(self.stack)):
+			ret=getattr(ret, self.stack[i])
+		return ret
+
+	def getFirstName(self):
+		return self.stack[0]
+
+
+	def __str__(self):
+		s=""
+		for i in range(len(self.stack)):
+			if i>0: s+="."
+			s+=self.stack[i].first
+		return s
 		
 	def isLeaf(self): return False
 
@@ -405,22 +449,22 @@ class Appel(Operation):
 		self.args=args
 		
 	def eval(self, stack):
-		name=self.name.eval(stack)
-		if hasBuiltin(name):
-			evalArgs=[]
-			for arg in self.args:
-				evalArgs.append(arg.eval(stack))
-			return execBuiltin(name, evalArgs)
+		name=self.name.getFirstName()
+
+		fct=stack.get(name)
+		env=Environement()
+
+		if callable(fct.fct):
+			args=[]
+			for i in range(len(self.args)): args.append(self.args[i].eval(stack))
+			return fct.fct(*tuple(args))
 		else:
-			fct=stack.get(name)
-			env=Environement()
 			if len(self.args)<len(fct.argsName):
 				raise Exception("Error: "+str(self.name)+" takes "+str(len(fct.argsName))+" args, "+str(len(self.args))+" given")
 			for i in range(len(fct.argsName)):
 				env.set(fct.argsName[i], self.args[i].eval(stack))
-
 			stack.pushEnv(env)
-			stack.print()
+			#stack.print()
 			out=fct.fct.eval(stack)
 			stack.popEnv()
 			return out
