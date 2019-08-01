@@ -87,7 +87,12 @@ class Parser:
         if self.tok==Lexer.TOK_KEYWORD:
             if self.data == "return": return self._return()
             if self.data == "include": return self._include()
+            if self.data == "break": return self._break()
         return self._expr()
+
+    def _break(self):
+        self._next()
+        return Break()
 
     def _include(self):
         self._next()

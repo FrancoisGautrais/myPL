@@ -197,8 +197,10 @@ class For(Operation):
 		self.aff.eval(env)
 		while self.cond.eval(env):
 			ret= self.bloc.eval(env)
+			if type(ret)==Break:
+				env.popEnv()
+				return None
 			self.inc.eval(env)
-
 		env.popEnv()
 		return ret
 
@@ -212,6 +214,8 @@ class While(Operation):
 		ret=None
 		while self.cond.eval(env):
 			ret= self.bloc.eval(env)
+			if type(ret)==Break:
+				return None
 		return ret
 
 class IfThenElse(Operation):
@@ -262,9 +266,11 @@ class Bloc(Operation):
 			ret=inst.eval(env)
 			if type(ret)==Return:
 				ret=ret.getValue()
-				if self.enclose:
-					env.popEnv()
+				if self.enclose: env.popEnv()
 				return Return(ret)
+			if type(ret)==Break:
+				if self.enclose: env.popEnv()
+				return ret
 
 		if self.enclose: env.popEnv()
 		return ret;
@@ -277,6 +283,10 @@ class Bloc(Operation):
 			if i>0: x+="; "
 			x+=str(self.insts[i])
 		return x+"}"
+
+class Break(Operation):
+	def eval(self, env=Stack()):
+		return self
 
 class Return(UnaryOperation):
 	def eval(self, env):
