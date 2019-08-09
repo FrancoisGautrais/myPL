@@ -1,17 +1,17 @@
 #!/usr/bin/python3
 import sys
-from pympler.asizeof import asizeof
-from dict.dict import Dict
+#from pympler.asizeof import asizeof
+from dictionaire.dict import Dict
 from wordgen.matrixloader import MatrixLoader
-from dict.indexeddict import IndexedDict
-from dict.anagrammaker import AnagramMaker
-from dict.dictparser import Parser
+from dictionaire.indexeddict import IndexedDict
+from dictionaire.anagrammaker import AnagramMaker
+from dictionaire.dictparser import Parser
 import time
 import random
 
 """
-#d=Parser.fromTextFile("data/dict/fr.courrant.dict", IndexedDict())
-#d=Parser.fromTextFile("data/dict/fr.courrant.dict", IndexedDict(3))
+#d=Parser.fromTextFile("data/dictionaire/fr.courrant.dictionaire", IndexedDict())
+#d=Parser.fromTextFile("data/dictionaire/fr.courrant.dictionaire", IndexedDict(3))
 d=Parser.fromTextFile("data/livre", Dict())
 d1=Parser.fromTextFile("data/livre", IndexedDict(3))
 
@@ -37,11 +37,11 @@ for i in range(2):
 show=False
 times=[]
 lt=time.time()
-d=Parser.fromDictFile("data/dict/fr.courrant.dict", Dict())
+d=Parser.fromDictFile("data/dictionaire/fr.courrant.dictionaire", Dict())
 times.append(time.time()-lt)
 
 lt=time.time()
-d1=Parser.fromTextFile("data/dict/fr.courrant.dict", IndexedDict(6))
+d1=Parser.fromTextFile("data/dictionaire/fr.courrant.dictionaire", IndexedDict(6))
 times.append(time.time()-lt)
 test=[d, d1]
 

@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0,'..')
 
 from .matrix import Word3Matrix
-from dict.dict import DictReader
+from dictionaire.dict import DictReader
 
 class MatrixLoader:
 	def __init__(self, reader, matClass=Word3Matrix, ponderate=True):

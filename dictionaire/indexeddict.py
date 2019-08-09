@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-#from dict import *
+#from dictionaire import *
 import json
 import unidecode
 import sys

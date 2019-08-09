@@ -8,7 +8,7 @@ from number.context import Context
 from math import log, exp
 from random import randint
 from number.exprgenerator import ExprGenerator
-
+"""
 expr="pi+4*6"
 
 exp=ExprGenerator()
@@ -24,7 +24,7 @@ while True:
 		print(res[0]," = ", res[1])
 		if res[1]==op.resultInt: break
 	print(op.result, " = ", op.result.eval(env))
-"""
+
 lex=Lexer(StringIOWrapper(expr))
 lex.next()
 while lex.token!=Lexer.TOK_END:

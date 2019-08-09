@@ -2,7 +2,7 @@
 
 
 from wordgen import matrix
-from dict import indexeddict, dict, dictfeeder, dictparser
+from dictionaire import indexeddict, dict, dictfeeder, dictparser
 
 import time
 import random
@@ -11,11 +11,11 @@ debug=False
 toTest=[matrix.Word3Matrix, matrix.WordNMatrix]
 
 #l = lexer.Lexer(reader.FileReader("dictionaire"))
-if debug: print("Loading dict")
+if debug: print("Loading dictionaire")
 
 ts0 = time.time()
 path="data/livre"
-#di=dict.Dict(path)
+#di=dictionaire.Dict(path)
 #di=indexeddict.IndexedDict(path)
 di=dictparser.DictParser.fromFile(path)
 

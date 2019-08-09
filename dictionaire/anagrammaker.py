@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 if __name__=="__main__":
-	from dict import Dict
-	from indexeddict import IndexedDict
-	from dictparser import DictParser
+	from dictionaire import Dict
+	from .indexeddict import IndexedDict
+	from .dictparser import DictParser
 else:
 	from .dict import Dict
 	

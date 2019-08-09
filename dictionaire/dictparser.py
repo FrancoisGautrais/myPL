@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 if __name__=="__main__":
-	from dict import Dict
+	from dictionaire import Dict
 else:
 	from .dict import Dict
 
@@ -115,5 +115,3 @@ if __name__=="__main__":
 	path="data/livre"
 	tp=TextParser(path)
 	d=tp.parse(Dict())
-			
-		
